@@ -1,5 +1,6 @@
 const express = require("express"),
       passport =require("passport"),
+      cookieSession = require('cookie-session'),
       auth = require("./utils/oauth"),
       request = require("request"),
       bodyParser = require("body-parser"),
@@ -9,26 +10,48 @@ const express = require("express"),
       app.set("view engine","ejs");
       app.use(bodyParser.urlencoded({extended:false}));
       app.use(bodyParser.json());
+      // cookieSession config
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000, // One day in milliseconds
+    keys: ['randomstringhere']
+}));
+
       
       app.use(passport.initialize());
       app.use(passport.session());
       app.get('/auth/google',
       passport.authenticate('google', { scope: 
-      [ 'https://www.googleapis.com/auth/plus.login',
-      , 'https://www.googleapis.com/auth/plus.profile.emails.read' ] }
+      ['profile'] }
 ));
+// Used to stuff a piece of information into a cookie
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
 
-app.get( '/auth/google/callback', 
-    passport.authenticate( 'google', { 
-        successRedirect: '/auth/google/success',
-        failureRedirect: '/auth/google/failure'
-}));
+// Used to decode the received cookie and persist session
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+
       app.get("/",(req,res)=>{
           res.render("search");
       });
       app.get("/login",(req,res)=>{
-          res.render("login");
-      })
+        res.render("login");
+    });
+      app.get( '/auth/google/callback', 
+    passport.authenticate( 'google', { 
+        successRedirect: '/',
+        failureRedirect: '/login'
+}));
+function isUserAuthenticated(req, res, next) {
+    if (req.user) {
+        next();
+    } else {
+        res.send('You must login!');
+    }
+}
 
       app.get("/results",(req,res)=>{
         let query = req.query.search;
