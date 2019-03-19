@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>data</title>
+</head>
+<body>
+    <%data.forEach((element)=>{ %>
+       <% for(let user in element){ %>
+            <p><%= element[user]%></p>
+       <% } %>
+    <% }) %>
+ <!-- <% for(let element in data){%>
+      <p><%= data[element]%></p>
+  <% } %> -->
+</body>
+</html>
